@@ -184,7 +184,7 @@ public class ig_CharacterController : MonoBehaviour {
     //Collision
     void OnControllerColliderHit(ControllerColliderHit other) {
 
-        //If the player dashes and hits something that isn't the ground. Used in the even a wall
+        //If the player dashes and hits something that isn't the ground. Used in the event a wall
         //or non-target enemy intercepts dash.
         if (other.collider.tag != "Ground") {
             if (Dash.dashing) {

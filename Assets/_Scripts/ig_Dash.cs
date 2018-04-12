@@ -12,6 +12,7 @@ namespace IndieGage {
         private GameObject parent;
         private CharacterController cc;
 
+        [Header("Dash Stats")]
         public float dashSpeed = 12f;
         public float dashDistance = 15f;
         public float dashTargetRadius = 1.5f;
@@ -20,9 +21,10 @@ namespace IndieGage {
         public bool dashing = false;
         public LayerMask dashMask;
 
+        [Header("Dash Positionals")]
         private Vector3 dashPoint;
         private Vector3 potentialDashPoint;
-        private Vector3 lastDashPoint;
+        //private Vector3 lastDashPoint;
         private int dashSector = 0;
         public GameObject dashTarget = null;
         private GameObject potentialTarget;
@@ -42,16 +44,18 @@ namespace IndieGage {
         public void CheckAbility(Vector3 leftStick, bool focusing) {
             
             if (focusing) {
+                //Enable the targeting objects if using focus
                 dashAroundMarker.SetActive(true);
                 dashTargetMarker.SetActive(true);
 
-                //Start raycast
+                //Spherecast out from player to find a potential target
                 RaycastHit hit;
                 if (Physics.SphereCast(parent.transform.position, cc.radius * dashSearchArea, leftStick, out hit, dashDistance, dashMask)) {
                     if (hit.transform.tag == "Target") {
                         //Store the potential target of your dash
                         potentialTarget = hit.transform.gameObject;
 
+                        //Get the nearest dash point around the target
                         ig_Targeting target = potentialTarget.GetComponent<ig_Targeting>();
                         potentialDashPoint = target.GetNearestNode(transform).position;
                     }
@@ -59,12 +63,13 @@ namespace IndieGage {
                 } else {
                     //if the raycast hits nothing make the target nothing
                     potentialTarget = null;
+                    
                     //store the point to dash to at the dash distance
                     potentialDashPoint = new Vector3(parent.transform.position.x + (leftStick.x * dashDistance), parent.transform.position.y, parent.transform.position.z + (leftStick.z * dashDistance));
                     
                 }
 
-                //Place the dash target markers
+                //Place the dash target markers or remove them
                 if (potentialTarget != null) {
                     dashTargetMarker.transform.position = potentialTarget.transform.position;
                     dashAroundMarker.transform.position = potentialDashPoint;
@@ -73,7 +78,7 @@ namespace IndieGage {
                     dashAroundMarker.transform.position = potentialDashPoint;
                 }
 
-                lastDashPoint = potentialDashPoint;
+                //lastDashPoint = potentialDashPoint;
 
             } 
 
@@ -82,19 +87,26 @@ namespace IndieGage {
                 if (dashTarget != null) {
                     if ((leftStick.x > 0.1f || leftStick.x < -0.1f) || (leftStick.z > 0.1f || leftStick.z < -0.1f)) {
 
+                        //Get the point the left stick is being held
                         potentialDashPoint = dashTarget.transform.position;
-
                         potentialDashPoint = new Vector3(potentialDashPoint.x + (leftStick.x * dashTargetRadius), potentialDashPoint.y, potentialDashPoint.z + (leftStick.z * dashTargetRadius));
                         dashAroundMarker.transform.position = potentialDashPoint;
+
+                        //Use that point to find the nearest node that can be dashed to
                         ig_Targeting targeting = dashTarget.GetComponent<ig_Targeting>();
                         potentialDashPoint = targeting.GetNearestNode(dashAroundMarker.transform).position;
 
-                        dashAroundMarker.SetActive(true);
+                        //Enable and set the dash marker
+                        if(dashAroundMarker.activeSelf==false)
+                            dashAroundMarker.SetActive(true);
                         dashAroundMarker.transform.position = potentialDashPoint;
 
+                    }else {
+                        if (dashAroundMarker.activeSelf == true)
+                            dashAroundMarker.SetActive(false);
                     }
                 } else {
-                    Debug.Log("Doing the no target no focus dash check");
+                    
                     potentialDashPoint = parent.transform.position;
                     dashAroundMarker.SetActive(false);
                 }
